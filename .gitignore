@@ -1,0 +1,8 @@
+logs/
+configs/secrets.json
+*.pyc
+__pycache__/
+logs/
+configs/secrets.json
+*.pyc
+__pycache__/
