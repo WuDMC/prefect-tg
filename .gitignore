@@ -6,3 +6,8 @@ logs/
 configs/secrets.json
 *.pyc
 __pycache__/
+.env
+libs/*
+libs/
+/libs/
+/volume/

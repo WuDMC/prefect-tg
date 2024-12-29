@@ -1,0 +1,3 @@
+[submodule "libs/tg_jobs_parser_module"]
+	path = libs/tg_jobs_parser_module
+	url = https://github.com/WuDMC/tg_jobs_parser_module

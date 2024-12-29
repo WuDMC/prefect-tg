@@ -1,0 +1,6 @@
+# Set more detailed logging while developing
+[logging]
+level = "INFO"
+
+[cli]
+prompt = "False"

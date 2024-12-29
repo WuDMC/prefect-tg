@@ -1,0 +1,76 @@
+# generic metadata
+prefect-version: 3.1.10
+name: demo
+
+# preparation steps
+build:
+push:
+
+# runtime steps
+pull:
+
+# deployment configurations
+- name: f1_find_msgs4parsing
+  version:
+  tags: []
+  concurrency_limit:
+  description:
+  entrypoint: flows/check_dialogs.py:find_msg_4parsing
+  parameters: {}
+  work_pool:
+    name: VM
+    work_queue_name:
+    job_variables: {}
+  enforce_parameter_schema: true
+  schedules:
+  - interval: 10800.0
+    anchor_date: '2024-12-29T20:46:58.735700+00:00'
+    timezone: UTC
+    active: true
+- name: f2_parse_msgs
+  version:
+  tags: []
+  concurrency_limit:
+  description:
+  entrypoint: flows/parse_msgs.py:parse_msg_n_load2gsc
+  parameters: {}
+  work_pool:
+    name: VM
+    work_queue_name:
+    job_variables: {}
+  enforce_parameter_schema: true
+  schedules:
+  - interval: 1800.0
+    anchor_date: '2024-12-29T20:52:35.871640+00:00'
+    timezone: UTC
+    active: true
+- name: f3_find_msgs2uploading
+  version:
+  tags: []
+  concurrency_limit:
+  description:
+  entrypoint: flows/msgs_to_process.py:find_msgs2load_n_load2bq
+  parameters: {}
+  work_pool:
+    name: VM
+    work_queue_name:
+    job_variables: {}
+  enforce_parameter_schema: true
+  schedules:
+  - interval: 21600.0
+    anchor_date: '2024-12-29T20:55:31.867626+00:00'
+    timezone: UTC
+    active: true
+- name: f4_upload_msgs
+  version:
+  tags: []
+  concurrency_limit:
+  description:
+  entrypoint: flows/load_msgs_to_bq.py:load2bq
+  parameters: {}
+  work_pool:
+    name: VM
+    work_queue_name:
+    job_variables: {}
+  enforce_parameter_schema: true
+  schedules: []
