@@ -3,7 +3,6 @@ from prefect.logging import get_run_logger
 import os
 import logging
 
-from tg_jobs_parser.telegram_helper.telegram_parser import TelegramParser
 from tg_jobs_parser.google_cloud_helper.storage_manager import StorageManager
 from tg_jobs_parser.google_cloud_helper.bigquery_manager import BigQueryManager
 from tg_jobs_parser.utils import json_helper
@@ -216,6 +215,8 @@ def parse_tg_dialogs(path):
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing TelegramParser...")
+        from tg_jobs_parser.telegram_helper.telegram_parser import TelegramParser
+        
         tg_parser = TelegramParser()
         prefect_logger.info("Start parsing tg dialogs")
         data = tg_parser.get_channels()
@@ -235,6 +236,8 @@ def update_target_ids(
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing TelegramParser...")
+        from tg_jobs_parser.telegram_helper.telegram_parser import TelegramParser
+
         tg_parser = TelegramParser()
         prefect_logger.info("Updating metadata locally")
         cloud_channels = json_helper.read_json(cloud_channels_file) or {}
@@ -304,6 +307,8 @@ def parse_messages(path):
     try:
         prefect_logger.info("Downloading channels metadata")
         storage_manager = StorageManager()
+        from tg_jobs_parser.telegram_helper.telegram_parser import TelegramParser
+
         msg_parser = TelegramParser()
 
         storage_manager.download_channels_metadata(path=path)
