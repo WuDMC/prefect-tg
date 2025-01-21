@@ -41,6 +41,8 @@ def find_msg_4parsing():
         )
         prefect_logger.info(f'bad_channels: {statistics["bad_channels"]}')
         prefect_logger.info(f'bad_channels_ids: {statistics["bad_channels_ids"]}')
+        gsc_files = tasks.list_msgs()
+        prefect_logger.info(f"{len(gsc_files)} GCS files total")
         prefect_logger.info("Stats checked successfully.")
         prefect_logger.info("Telegram Metadata Flow completed successfully.")
     except Exception as e:

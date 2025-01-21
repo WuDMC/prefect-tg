@@ -27,14 +27,24 @@ def parse_msg_n_load2gsc():
         )
         prefect_logger.info(f'bad_channels: {statistics["bad_channels"]}')
         prefect_logger.info(f'bad_channels_ids: {statistics["bad_channels_ids"]}')
+        gsc_files = tasks.list_msgs()
+        old_count = len(gsc_files)
+        prefect_logger.info(f"{old_count} GCS files total")
         prefect_logger.info("Stats checked successfully.")
         # parse msgs  and save to files
         tasks.parse_messages(CL_CHANNELS_LOCAL_PATH)
         # load to gcs parsed msgs
+        prefect_logger.info(f'msg files ready to upload {len([file for file in os.listdir(volume_folder_path) if file.startswith("msgs")])}')
         tasks.upload_msgs_files_to_storage(file_path_1=CL_CHANNELS_LOCAL_PATH,
                                            file_path_2=UP_CHANNELS_LOCAL_PATH,
                                            output_path=MG_CHANNELS_LOCAL_PATH)
-
+        gsc_files = tasks.list_msgs()
+        new_count = len(gsc_files)
+        prefect_logger.info(f"{new_count} GCS files total")
+        prefect_logger.info(f"Created {new_count - old_count} new GCS files")
+        tasks.delete_tmp_file(CL_CHANNELS_LOCAL_PATH)
+        tasks.delete_tmp_file(UP_CHANNELS_LOCAL_PATH)
+        tasks.delete_tmp_file(MG_CHANNELS_LOCAL_PATH)
         prefect_logger.info("Message processing flow completed successfully")
     except Exception as e:
         prefect_logger.error(f"Error in message processing flow: {e}")
