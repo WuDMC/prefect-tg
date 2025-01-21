@@ -8,16 +8,20 @@ TMP_FILE = os.path.join(volume_folder_path, "tmp_not_uploaded_msg_files.json")
 
 @flow
 def load2bq():
+    # check BQ status table and find not processed files from GSC, if any upload it yo BQ
     prefect_logger = get_run_logger()
     gsc_files = tasks.list_msgs()
-    prefect_logger.info(f"{len(gsc_files)} GCS files to process.")
+    prefect_logger.info(f"{len(gsc_files)} GCS files total")
     last_status_files = tasks.check_files_statuses()
-    prefect_logger.info(f"{len(last_status_files)} last_status_files files to process.")
+    prefect_logger.info(f"{len(last_status_files)} last_status_files files total")
     # upload files to bq and save new status to tmp file
-    tmp_file = tasks.process_all_files(gsc_files=gsc_files, last_status_files=last_status_files, output_file=TMP_FILE)
-    if tmp_file:
-        tasks.update_status_table(tmp_file)
-        tasks.delete_tmp_file(tmp_file)
+    not_processed = sum(1 for item in last_status_files if item.get("status") != "done")
+    prefect_logger.info(f"{not_processed} files ready to upload to BQ")
+    temp_file = tasks.process_all_files(gsc_files=gsc_files, last_status_files=last_status_files, output_file=TMP_FILE)
+    # temp file store metadata what files have been uploaded to update status table BQ
+    if temp_file:
+        tasks.update_status_table(temp_file)
+        tasks.delete_tmp_file(temp_file)
         # stats logging
         uploaded_stats = tasks.check_uploaded_files_statuses()
         prefect_logger.info(uploaded_stats)
@@ -35,6 +39,9 @@ def load2bq():
         prefect_logger.info("Stats checked successfully.")
         raw_stats = tasks.check_raw_messages_statuses()
         prefect_logger.info(raw_stats)
+    else:
+        prefect_logger.info('all files already in BQ msg table')
+
 
 if __name__ == "__main__":
     load2bq()

@@ -47,7 +47,7 @@ def upload_msg_bq(path):
         prefect_logger.info("No files to process. Be happy!")
         return
 
-    prefect_logger.info(f"Uploading file {path} to BigQuery.")
+    prefect_logger.info(f"Uploading file {path} to BigQuery {vars.BIGQUERY_RAW_MESSAGES_TABLE}.")
     bigquery_manager = BigQueryManager(vars.PROJECT_ID)
 
     return bigquery_manager.load_json_uri_to_bigquery(
@@ -62,6 +62,7 @@ def list_msgs():
     prefect_logger.info("Listing messages from storage.")
     storage_manager = StorageManager()
     return storage_manager.list_msgs_with_metadata()
+
 
 @task
 def check_files_statuses():
@@ -129,15 +130,13 @@ def process_all_files(gsc_files, last_status_files, output_file):
 @task
 def update_status_table(file_path):
     prefect_logger = get_run_logger()
-    prefect_logger.info(f"Uploading file {file_path} to BigQuery.")
+    prefect_logger.info(f"Uploading file {file_path} to BigQuery {vars.BIGQUERY_UPLOAD_STATUS_TABLE} ")
     bigquery_manager = BigQueryManager(vars.PROJECT_ID)
 
     return bigquery_manager.load_json_to_bigquery(
         json_file_path=file_path,
         table_id=f"{vars.BIGQUERY_DATASET}.{vars.BIGQUERY_UPLOAD_STATUS_TABLE}",
     )
-
-
 
 
 @task
@@ -173,7 +172,6 @@ def download_and_process_files(gsc_files, bigquery_files, output_file):
     for file in gsc_files:
         process_status += 1
         logging.info(f"Processed {process_status} from {process_len} GCS files")
-        # prefect_logger.info(f"Processed {process_status} from {process_len} GCS files")
         if file["name"] in existing_files_set:
             continue
 
@@ -216,7 +214,7 @@ def parse_tg_dialogs(path):
     try:
         prefect_logger.info("Initializing TelegramParser...")
         from tg_jobs_parser.telegram_helper.telegram_parser import TelegramParser
-        
+
         tg_parser = TelegramParser()
         prefect_logger.info("Start parsing tg dialogs")
         data = tg_parser.get_channels()
@@ -252,9 +250,9 @@ def update_target_ids(
 
 @task
 def update_last_updated_ids(
-            file1_path,
-            file2_path,
-            output_path):
+        file1_path,
+        file2_path,
+        output_path):
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Merging metadata to update last posted IDs in tg channels")
@@ -283,9 +281,6 @@ def update_metadata_in_cloud(source_file_name):
         raise
 
 
-
-
-
 @task
 def check_channel_stats():
     prefect_logger = get_run_logger()
@@ -300,23 +295,49 @@ def check_channel_stats():
         raise
 
 
-
 @task
 def parse_messages(path):
+    last_index = "last_index.txt"
+
+    def get_last_index(filename):
+        try:
+            with open(filename, "r") as file:
+                value = file.read().strip()
+                try:
+                    logging.warning(f'Found last index file with value {value}')
+                    return int(value)
+                except ValueError:
+                    logging.warning(f"error: fie {filename} not found")
+                    return 0
+        except FileNotFoundError:
+            logging.warning(f"error: fie {filename} not found")
+            return 0
+        except Exception as e:
+            logging.warning(f"reading file error {e}")
+            return 0
+
     prefect_logger = get_run_logger()
     try:
-        prefect_logger.info("Downloading channels metadata")
+        prefect_logger.info("Start parsing messages")
+
         storage_manager = StorageManager()
         from tg_jobs_parser.telegram_helper.telegram_parser import TelegramParser
 
         msg_parser = TelegramParser()
-
-        storage_manager.download_channels_metadata(path=path)
+        if not os.path.exists(path):
+            prefect_logger.info("Downloading channels metadata")
+            storage_manager.download_channels_metadata(path=path)
+            process_status = 0
+        else:
+            prefect_logger.info(f"File {path} with channels found")
+            # process_status = get_last_index(last_index)
+            process_status = 0
+            prefect_logger.info(f"Continue parsing from {process_status}")
         channels = json_helper.read_json(path)
-        process_status = 0
         process_len = len(channels.items())
-
         for ch_id, channel in channels.items():
+            with open(last_index, "w") as file:
+                file.write(str(process_status))
             process_status += 1
             prefect_logger.info(f"Processed {process_status} from {process_len} channels")
             if channel["status"] == "bad" or channel["type"] != "ChatType.CHANNEL":
@@ -324,6 +345,7 @@ def parse_messages(path):
 
             prefect_logger.info(f"Parsing messages for channel {ch_id}")
             msgs, left, right = msg_parser.run_chat_parser(channel)
+            prefect_logger.info(f"Parsed {len(msgs)} messages for channel {ch_id}")
 
             if msgs:
                 json_helper.save_to_line_delimited_json(
@@ -360,6 +382,7 @@ def upload_msgs_files_to_storage(file_path_1, file_path_2, output_path):
                 )
 
                 if uploaded:
+                    prefect_logger.info(f' file {blob_path} uploaded: {uploaded}')
                     results[chat_id] = {
                         "new_left_saved_id": left,
                         "new_right_saved_id": right,
@@ -378,7 +401,6 @@ def upload_msgs_files_to_storage(file_path_1, file_path_2, output_path):
         raise
 
 
-
 @task
 def delete_tmp_file(file_path):
     prefect_logger = get_run_logger()
@@ -388,8 +410,6 @@ def delete_tmp_file(file_path):
         prefect_logger.info(f"Temporary file {file_path} deleted")
     except OSError as e:
         prefect_logger.error(f"Error deleting temporary file {file_path}: {e}")
-
-
 
 
 @task

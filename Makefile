@@ -1,7 +1,7 @@
 # Makefile for Prefect project
 include .env
 
-VENV_DIR = .venv
+VENV_DIR = venv
 PYTHON = python3
 
 .PHONY: install login deploy run test format lint submodule venv clean all
@@ -33,7 +33,7 @@ deploy:
 
 run:
 	@echo "Starting Prefect worker..."
-	$(VENV_DIR)/bin/prefect worker start --pool VM
+	$(VENV_DIR)/bin/prefect worker start --pool local
 
 test:
 	@echo "Running tests..."
