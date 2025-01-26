@@ -8,6 +8,7 @@ CL_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_gsc_channels_met
 TG_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_tg_channels_metadata.json")
 MG_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_merged_channels_metadata.json")
 
+
 @flow
 def find_msg_4parsing():
     # 1
@@ -16,9 +17,8 @@ def find_msg_4parsing():
         prefect_logger.info("Starting Telegram Metadata Flow")
         # get ids of messages to parse
         tasks.get_metadata_from_cloud(CL_CHANNELS_LOCAL_PATH)
-        tasks.parse_tg_dialogs(TG_CHANNELS_LOCAL_PATH)
-        tasks.update_target_ids(cloud_channels_file=CL_CHANNELS_LOCAL_PATH,
-                                tg_channels_file=TG_CHANNELS_LOCAL_PATH,)
+        tasks.parse_tg_dialogs(tg_channels_file=TG_CHANNELS_LOCAL_PATH, cloud_channels_file=CL_CHANNELS_LOCAL_PATH)
+        # merge files to update range what to download
         tasks.update_last_updated_ids(
             file1_path=CL_CHANNELS_LOCAL_PATH,
             file2_path=TG_CHANNELS_LOCAL_PATH,

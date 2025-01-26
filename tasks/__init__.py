@@ -27,36 +27,9 @@ from google.api_core.exceptions import NotFound
 # logger.setLevel(logging.INFO)
 
 
-def check_table_exists():
-    prefect_logger = get_run_logger()
-    try:
-        prefect_logger.info(f"Checking if table {vars.BIGQUERY_DATASET}.{vars.BIGQUERY_UPLOAD_STATUS_TABLE} exists.")
-        bigquery_manager = BigQueryManager(vars.PROJECT_ID)
-        bigquery_manager.client.get_table(
-            f"{vars.BIGQUERY_DATASET}.{vars.BIGQUERY_UPLOAD_STATUS_TABLE}"
-        )
-        return True
-    except NotFound:
-        prefect_logger.warning("Table not found.")
-        return False
-
-def upload_msg_bq(path):
-    prefect_logger = get_run_logger()
-
-    if not path:
-        prefect_logger.info("No files to process. Be happy!")
-        return
-
-    prefect_logger.info(f"Uploading file {path} to BigQuery {vars.BIGQUERY_RAW_MESSAGES_TABLE}.")
-    bigquery_manager = BigQueryManager(vars.PROJECT_ID)
-
-    return bigquery_manager.load_json_uri_to_bigquery(
-        path=path,
-        table_id=f"{vars.BIGQUERY_DATASET}.{vars.BIGQUERY_RAW_MESSAGES_TABLE}",
-    )
-
 @task
 def list_msgs():
+    # flow 1--8, 2-2, 2-5
     prefect_logger = get_run_logger()
 
     prefect_logger.info("Listing messages from storage.")
@@ -65,137 +38,8 @@ def list_msgs():
 
 
 @task
-def check_files_statuses():
-    prefect_logger = get_run_logger()
-    if check_table_exists:
-        bigquery_manager = BigQueryManager(vars.PROJECT_ID)
-        prefect_logger.info("Querying message files statuses from BigQuery.")
-        return bigquery_manager.query_msg_files_statuses(
-            dataset_id=vars.BIGQUERY_DATASET,
-            table_id=vars.BIGQUERY_UPLOAD_STATUS_TABLE,
-        )
-    else:
-        prefect_logger.warning("No uploaded files status to fetch.")
-        return []
-
-
-@task
-def process_all_files(gsc_files, last_status_files, output_file):
-    prefect_logger = get_run_logger()
-
-    if not gsc_files:
-        prefect_logger.info("No files found in storage.")
-        return False
-
-    if not last_status_files:
-        prefect_logger.info("No files found in BigQuery statuses.")
-        return False
-
-    not_processed_files_set = {
-        file["filename"] for file in last_status_files if file["status"] != "done"
-    }
-    if len(not_processed_files_set) == 0:
-        prefect_logger.info("All files already proceeded. WELL DONE. >> cerveza time")
-        return False
-
-    data = []
-    process_status = 0
-    process_len = len(gsc_files)
-    for file in gsc_files:
-        process_status += 1
-        logging.info(f"Processed {process_status} from {process_len} GCS files")
-        match = vars.MSGS_FILE_PATTERN.match(file["name"])
-        if file["name"] in not_processed_files_set and match:
-            logging.info(f"File {file['name']} ready to load to BQ.")
-        elif file["name"] in not_processed_files_set:
-            logging.warning(f"Filename {file['name']} does not match the expected pattern.")
-            continue
-        else:
-            continue
-
-        uploaded = upload_msg_bq(path=file["full_path"])
-        if uploaded:
-            row = json_helper.make_row_msg_status(file, match, status="done")
-            data.append(row)
-
-    if not data:
-        prefect_logger.info("No data to save.")
-        return False
-
-    json_helper.save_to_line_delimited_json(data, output_file)
-    prefect_logger.info(f"Temporary file with uploaded message files created at {output_file}")
-    return output_file
-
-
-@task
-def update_status_table(file_path):
-    prefect_logger = get_run_logger()
-    prefect_logger.info(f"Uploading file {file_path} to BigQuery {vars.BIGQUERY_UPLOAD_STATUS_TABLE} ")
-    bigquery_manager = BigQueryManager(vars.PROJECT_ID)
-
-    return bigquery_manager.load_json_to_bigquery(
-        json_file_path=file_path,
-        table_id=f"{vars.BIGQUERY_DATASET}.{vars.BIGQUERY_UPLOAD_STATUS_TABLE}",
-    )
-
-
-@task
-def check_msg_files_in_process():
-    prefect_logger = get_run_logger()
-    if check_table_exists():
-        prefect_logger.info(f" table {vars.BIGQUERY_DATASET}.{vars.BIGQUERY_UPLOAD_STATUS_TABLE} exists.")
-        prefect_logger.info("Fetching uploaded files from BigQuery.")
-        bigquery_manager = BigQueryManager(vars.PROJECT_ID)
-
-        return bigquery_manager.fetch_data(
-            dataset_id=vars.BIGQUERY_DATASET,
-            table_id=vars.BIGQUERY_UPLOAD_STATUS_TABLE,
-            selected_fields="filename",
-        )
-    else:
-        prefect_logger.warning("No uploaded files to fetch.")
-        return []
-
-
-@task
-def download_and_process_files(gsc_files, bigquery_files, output_file):
-    prefect_logger = get_run_logger()
-
-    if not gsc_files:
-        prefect_logger.info("No files found in storage.")
-        return False
-
-    existing_files_set = set(file["filename"] for file in bigquery_files)
-    data = []
-    process_status = 0
-    process_len = len(gsc_files)
-    for file in gsc_files:
-        process_status += 1
-        logging.info(f"Processed {process_status} from {process_len} GCS files")
-        if file["name"] in existing_files_set:
-            continue
-
-        match = vars.MSGS_FILE_PATTERN.match(file["name"])
-        if not match:
-            prefect_logger.warning(f"Filename {file['name']} does not match the expected pattern.")
-            continue
-
-        row = json_helper.make_row_msg_status(file, match, status="in process")
-        data.append(row)
-
-    if not data:
-        prefect_logger.info("No new files to process.")
-        return False
-
-    # Save data to a temporary file
-    json_helper.save_to_line_delimited_json(data, output_file)
-    prefect_logger.info(f"Temporary file with msg_files statuses created at {output_file}")
-
-    return output_file
-
-
-@task
 def get_metadata_from_cloud(path):
+    # flow 1-1
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing StorageManager...")
@@ -209,7 +53,8 @@ def get_metadata_from_cloud(path):
 
 
 @task
-def parse_tg_dialogs(path):
+def parse_tg_dialogs(tg_channels_file, cloud_channels_file, force=False):
+    # flow 1-2
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing TelegramParser...")
@@ -217,9 +62,16 @@ def parse_tg_dialogs(path):
 
         tg_parser = TelegramParser()
         prefect_logger.info("Start parsing tg dialogs")
-        data = tg_parser.get_channels()
-        json_helper.save_to_json(data=data, path=path)
-        prefect_logger.info(f"Dialogs saved to {path}")
+        channels_data = tg_parser.get_channels()
+        json_helper.save_to_json(data=channels_data, path=tg_channels_file)
+        prefect_logger.info(f"Dialogs metadata saved to {tg_channels_file}")
+        prefect_logger.info("Updating metadata locally")
+        cloud_channels = json_helper.read_json(cloud_channels_file) or {}
+        date = tg_parser.config.get('telegram', 'start_data')
+        # updating ranges what need to download (from start date to most fresh message)
+        tg_parser.run_set_target_ids(cloud_channels=cloud_channels, date=date, force=force)
+        json_helper.save_to_json(cloud_channels, cloud_channels_file)
+        prefect_logger.info(f"Updated metadata saved to {cloud_channels_file}")
     except Exception as e:
         prefect_logger.error(f"Error in parse_tg_dialogs: {e}")
         raise
@@ -229,8 +81,8 @@ def parse_tg_dialogs(path):
 def update_target_ids(
         cloud_channels_file,
         tg_channels_file,
-        date=vars.START_DATE,
         force=False):
+    # flow 1-3
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing TelegramParser...")
@@ -239,8 +91,10 @@ def update_target_ids(
         tg_parser = TelegramParser()
         prefect_logger.info("Updating metadata locally")
         cloud_channels = json_helper.read_json(cloud_channels_file) or {}
-        tg_channels = json_helper.read_json(tg_channels_file)
-        json_helper.set_target_ids(tg_channels, cloud_channels, tg_parser, date, force)
+        # tg_channels = json_helper.read_json(tg_channels_file)
+        date = tg_parser.config.get('telegram', 'start_data')
+        tg_parser.run_set_target_ids(cloud_channels=cloud_channels, date=date, force=force)
+        # json_helper.set_target_ids(tg_channels, cloud_channels, tg_parser, date, force)
         json_helper.save_to_json(cloud_channels, cloud_channels_file)
         prefect_logger.info(f"Updated metadata saved to {cloud_channels_file}")
     except Exception as e:
@@ -254,6 +108,7 @@ def update_last_updated_ids(
         file2_path,
         output_path):
     prefect_logger = get_run_logger()
+    # flow 1-4
     try:
         prefect_logger.info("Merging metadata to update last posted IDs in tg channels")
         json_helper.merge_json_files(
@@ -269,6 +124,7 @@ def update_last_updated_ids(
 
 @task
 def update_metadata_in_cloud(source_file_name):
+    #flow 1-5
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing StorageManager...")
@@ -283,6 +139,7 @@ def update_metadata_in_cloud(source_file_name):
 
 @task
 def check_channel_stats():
+    # flow 1-7, 2-1
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing StorageManager...")
@@ -297,6 +154,7 @@ def check_channel_stats():
 
 @task
 def parse_messages(path):
+    # flow 2-3
     last_index = "last_index.txt"
 
     def get_last_index(filename):
@@ -364,6 +222,7 @@ def parse_messages(path):
 
 @task
 def upload_msgs_files_to_storage(file_path_1, file_path_2, output_path):
+    # flow 2-4
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Uploading message files to storage")
@@ -403,6 +262,7 @@ def upload_msgs_files_to_storage(file_path_1, file_path_2, output_path):
 
 @task
 def delete_tmp_file(file_path):
+    # flow 1-6, 2-6
     prefect_logger = get_run_logger()
 
     try:
@@ -410,26 +270,3 @@ def delete_tmp_file(file_path):
         prefect_logger.info(f"Temporary file {file_path} deleted")
     except OSError as e:
         prefect_logger.error(f"Error deleting temporary file {file_path}: {e}")
-
-
-@task
-def check_uploaded_files_statuses():
-    # task 6
-    prefect_logger = get_run_logger()
-    prefect_logger.info(f"Checking {vars.BIGQUERY_DATASET}.{vars.BIGQUERY_UPLOAD_STATUS_TABLE}")
-    bigquery_manager = BigQueryManager(vars.PROJECT_ID)
-
-    return bigquery_manager.check_table_stats(
-        f"{vars.BIGQUERY_DATASET}.{vars.BIGQUERY_UPLOAD_STATUS_TABLE}"
-    )
-
-
-@task
-def check_raw_messages_statuses():
-    # task 8
-    prefect_logger = get_run_logger()
-    bigquery_manager = BigQueryManager(vars.PROJECT_ID)
-    prefect_logger.info(f"Checking {vars.BIGQUERY_DATASET}.{vars.BIGQUERY_RAW_MESSAGES_TABLE}")
-    return bigquery_manager.check_table_stats(
-        f"{vars.BIGQUERY_DATASET}.{vars.BIGQUERY_RAW_MESSAGES_TABLE}"
-    )
