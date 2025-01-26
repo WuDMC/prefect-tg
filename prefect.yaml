@@ -59,31 +59,3 @@ deployments:
       image: '{{ build_image.image }}'
   enforce_parameter_schema: true
   schedules: []
-- name: f3_find_msgs2uploading
-  version:
-  tags: []
-  concurrency_limit:
-  description:
-  entrypoint: flows/msgs_to_process.py:find_msgs2load
-  parameters: {}
-  work_pool:
-    name: gcp-runner
-    work_queue_name: default
-    job_variables:
-      image: '{{ build_image.image }}'
-  enforce_parameter_schema: true
-  schedules: []
-- name: f4_upload_msgs
-  version:
-  tags: []
-  concurrency_limit:
-  description:
-  entrypoint: flows/load_msgs_to_bq.py:load2bq
-  parameters: {}
-  work_pool:
-    name: gcp-runner
-    work_queue_name: default
-    job_variables:
-      image: '{{ build_image.image }}'
-  enforce_parameter_schema: true
-  schedules: []
