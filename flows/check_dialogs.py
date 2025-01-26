@@ -20,8 +20,8 @@ def find_msg_4parsing():
         tasks.parse_tg_dialogs(tg_channels_file=TG_CHANNELS_LOCAL_PATH, cloud_channels_file=CL_CHANNELS_LOCAL_PATH)
         # merge files to update range what to download
         tasks.update_last_updated_ids(
-            file1_path=CL_CHANNELS_LOCAL_PATH,
-            file2_path=TG_CHANNELS_LOCAL_PATH,
+            cl_file_path=CL_CHANNELS_LOCAL_PATH,
+            tg_file_path=TG_CHANNELS_LOCAL_PATH,
             output_path=MG_CHANNELS_LOCAL_PATH
         )
         # load to gcs info about msgs to parse
@@ -41,8 +41,8 @@ def find_msg_4parsing():
         )
         prefect_logger.info(f'bad_channels: {statistics["bad_channels"]}')
         prefect_logger.info(f'bad_channels_ids: {statistics["bad_channels_ids"]}')
-        gsc_files = tasks.list_msgs()
-        prefect_logger.info(f"{len(gsc_files)} GCS files total")
+        # gsc_files = tasks.list_msgs()
+        # prefect_logger.info(f"{len(gsc_files)} GCS files total")
         prefect_logger.info("Stats checked successfully.")
         prefect_logger.info("Telegram Metadata Flow completed successfully.")
     except Exception as e:

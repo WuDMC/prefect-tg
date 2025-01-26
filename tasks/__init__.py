@@ -4,27 +4,25 @@ import os
 import logging
 
 from tg_jobs_parser.google_cloud_helper.storage_manager import StorageManager
-from tg_jobs_parser.google_cloud_helper.bigquery_manager import BigQueryManager
 from tg_jobs_parser.utils import json_helper
 from tg_jobs_parser.configs import vars, volume_folder_path
-from google.api_core.exceptions import NotFound
 
 
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format="%(asctime)s - %(levelname)s - %(message)s"
-# )
-# logging.getLogger("tg_jobs_parser").setLevel(logging.INFO)
-#
-# logger = logging.getLogger()
-#
-# if not logger.handlers:
-#     console_handler = logging.StreamHandler()
-#     console_handler.setLevel(logging.INFO)
-#     console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-#     logger.addHandler(console_handler)
-#
-# logger.setLevel(logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logging.getLogger("tg_jobs_parser").setLevel(logging.INFO)
+
+logger = logging.getLogger()
+
+if not logger.handlers:
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    logger.addHandler(console_handler)
+
+logger.setLevel(logging.INFO)
 
 
 @task
@@ -68,8 +66,8 @@ def parse_tg_dialogs(tg_channels_file, cloud_channels_file, force=False):
         prefect_logger.info("Updating metadata locally")
         cloud_channels = json_helper.read_json(cloud_channels_file) or {}
         date = tg_parser.config.get('telegram', 'start_data')
-        # updating ranges what need to download (from start date to most fresh message)
-        tg_parser.run_set_target_ids(cloud_channels=cloud_channels, date=date, force=force)
+        # set start date and ids
+        cloud_channels = tg_parser.run_set_start_ids(cloud_channels=cloud_channels, date=date, force=force)
         json_helper.save_to_json(cloud_channels, cloud_channels_file)
         prefect_logger.info(f"Updated metadata saved to {cloud_channels_file}")
     except Exception as e:
@@ -104,16 +102,16 @@ def update_target_ids(
 
 @task
 def update_last_updated_ids(
-        file1_path,
-        file2_path,
+        cl_file_path,
+        tg_file_path,
         output_path):
     prefect_logger = get_run_logger()
     # flow 1-4
     try:
         prefect_logger.info("Merging metadata to update last posted IDs in tg channels")
         json_helper.merge_json_files(
-            file1_path=file1_path,
-            file2_path=file2_path,
+            file1_path=cl_file_path,
+            file2_path=tg_file_path,
             output_path=output_path,
         )
         prefect_logger.info(f"Merged metadata saved to {output_path}")
