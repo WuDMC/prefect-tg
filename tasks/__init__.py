@@ -43,7 +43,8 @@ def get_metadata_from_cloud(path):
         prefect_logger.info("Initializing StorageManager...")
         storage_manager = StorageManager()
         prefect_logger.info("Getting metadata from cloud")
-        storage_manager.download_channels_metadata(path=path)
+        storage_manager.download_blob(blob_name=storage_manager.config.source_channels_blob,
+                                      path=path)
         prefect_logger.info(f"Metadata downloaded to {path}")
     except Exception as e:
         prefect_logger.error(f"Error in get_metadata_from_cloud: {e}")
@@ -182,7 +183,8 @@ def parse_messages(path):
         msg_parser = TelegramParser()
         if not os.path.exists(path):
             prefect_logger.info("Downloading channels metadata")
-            storage_manager.download_channels_metadata(path=path)
+            storage_manager.download_blob(blob_name=storage_manager.config.source_channels_blob,
+                                          path=path)
             process_status = 0
         else:
             prefect_logger.info(f"File {path} with channels found")
