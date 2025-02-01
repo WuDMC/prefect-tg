@@ -35,8 +35,8 @@ def parse_msg_n_load2gsc():
         tasks.parse_messages(CL_CHANNELS_LOCAL_PATH)
         # load to gcs parsed msgs
         prefect_logger.info(f'msg files ready to upload {len([file for file in os.listdir(volume_folder_path) if file.startswith("msgs")])}')
-        tasks.upload_msgs_files_to_storage(file_path_1=CL_CHANNELS_LOCAL_PATH,
-                                           file_path_2=UP_CHANNELS_LOCAL_PATH,
+        tasks.upload_msgs_files_to_storage(cl_file_path=CL_CHANNELS_LOCAL_PATH,
+                                           up_file_path=UP_CHANNELS_LOCAL_PATH,
                                            output_path=MG_CHANNELS_LOCAL_PATH)
         gsc_files = tasks.list_msgs()
         new_count = len(gsc_files)
