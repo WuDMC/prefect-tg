@@ -221,7 +221,7 @@ def parse_messages(path):
 
 
 @task
-def upload_msgs_files_to_storage(file_path_1, file_path_2, output_path):
+def upload_msgs_files_to_storage(cl_file_path, up_file_path, output_path):
     # flow 2-4
     prefect_logger = get_run_logger()
     try:
@@ -247,12 +247,10 @@ def upload_msgs_files_to_storage(file_path_1, file_path_2, output_path):
                         "new_right_saved_id": right,
                         "uploaded_path": blob_path,
                     }
-                    storage_manager.delete_local_file(
-                        os.path.join(volume_folder_path, filename)
-                    )
+                    os.remove(os.path.join(volume_folder_path, filename))
 
-        json_helper.save_to_json(results, file_path_2)
-        json_helper.update_uploaded_borders(file_path_1, file_path_2, output_path)
+        json_helper.save_to_json(results, up_file_path)
+        json_helper.update_uploaded_borders(cl_file_path, up_file_path, output_path)
         storage_manager.update_channels_metadata(output_path)
         prefect_logger.info("Uploaded message files to storage successfully")
     except Exception as e:
