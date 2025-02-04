@@ -144,8 +144,20 @@ def check_channel_stats():
         prefect_logger.info("Initializing StorageManager...")
         storage_manager = StorageManager()
         prefect_logger.info("Checking stats")
-        storage_manager.check_channel_stats()
-        return storage_manager.statistics
+        storage_manager.check_channel_stats(type_filter="ChatType.CHANNEL")
+        statistics = storage_manager.statistics
+        prefect_logger.info(f'total download scope: {statistics["download_scope"]}')
+        prefect_logger.info(f'msg downloaded: {statistics["total_downloaded"]}')
+        prefect_logger.info(f'Left to download: {statistics["download_scope"] - statistics["total_downloaded"]}')
+        prefect_logger.info(f'channels_total: {statistics["channels_total"]}')
+        prefect_logger.info(f'channels_done: {statistics["channels_done"]}')
+        prefect_logger.info(f'channels_to_update: {statistics["channels_to_update"]}')
+        prefect_logger.info(
+            f'channels_to_update_ids: {statistics["to_upd_channels_ids"]}'
+        )
+        prefect_logger.info(f'bad_channels: {statistics["bad_channels"]}')
+        prefect_logger.info(f'bad_channels_ids: {statistics["bad_channels_ids"]}')
+        return statistics
     except Exception as e:
         prefect_logger.error(f"Error in check_channel_stats: {e}")
         raise
