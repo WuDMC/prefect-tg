@@ -30,17 +30,7 @@ def find_msg_4parsing():
         tasks.delete_tmp_file(TG_CHANNELS_LOCAL_PATH)
         tasks.delete_tmp_file(MG_CHANNELS_LOCAL_PATH)
 
-        statistics = tasks.check_channel_stats()
-        prefect_logger.info(f'msg downloaded: {statistics["total_downloaded"]}')
-        prefect_logger.info(f'need to download total: {statistics["total_difference"]}')
-        prefect_logger.info(f'channels_total: {statistics["channels_total"]}')
-        prefect_logger.info(f'channels_done: {statistics["channels_done"]}')
-        prefect_logger.info(f'channels_to_update: {statistics["channels_to_update"]}')
-        prefect_logger.info(
-            f'channels_to_update_ids: {statistics["to_upd_channels_ids"]}'
-        )
-        prefect_logger.info(f'bad_channels: {statistics["bad_channels"]}')
-        prefect_logger.info(f'bad_channels_ids: {statistics["bad_channels_ids"]}')
+        tasks.check_channel_stats()
         # gsc_files = tasks.list_msgs()
         # prefect_logger.info(f"{len(gsc_files)} GCS files total")
         prefect_logger.info("Stats checked successfully.")
@@ -52,3 +42,14 @@ def find_msg_4parsing():
 
 if __name__ == "__main__":
     find_msg_4parsing()
+    STATS_TEMPLATE = {
+            "channels_total": 0,
+            "channels_done": 0,
+            "total_downloaded": 0,
+            "download_scope": 0,
+            "total_missed": 0,
+            "channels_to_update": 0,
+            "bad_channels": 0,
+            "bad_channels_ids": [],
+            "to_upd_channels_ids": [],
+        }

@@ -16,17 +16,7 @@ def parse_msg_n_load2gsc():
     try:
         prefect_logger.info("Starting message processing flow")
 
-        statistics = tasks.check_channel_stats()
-        prefect_logger.info(f'msg downloaded: {statistics["total_downloaded"]}')
-        prefect_logger.info(f'need to download total: {statistics["total_difference"]}')
-        prefect_logger.info(f'channels_total: {statistics["channels_total"]}')
-        prefect_logger.info(f'channels_done: {statistics["channels_done"]}')
-        prefect_logger.info(f'channels_to_update: {statistics["channels_to_update"]}')
-        prefect_logger.info(
-            f'channels_to_update_ids: {statistics["to_upd_channels_ids"]}'
-        )
-        prefect_logger.info(f'bad_channels: {statistics["bad_channels"]}')
-        prefect_logger.info(f'bad_channels_ids: {statistics["bad_channels_ids"]}')
+        tasks.check_channel_stats()
         gsc_files = tasks.list_msgs()
         old_count = len(gsc_files)
         prefect_logger.info(f"{old_count} GCS files total")
@@ -45,6 +35,7 @@ def parse_msg_n_load2gsc():
         tasks.delete_tmp_file(CL_CHANNELS_LOCAL_PATH)
         tasks.delete_tmp_file(UP_CHANNELS_LOCAL_PATH)
         tasks.delete_tmp_file(MG_CHANNELS_LOCAL_PATH)
+        tasks.check_channel_stats()
         prefect_logger.info("Message processing flow completed successfully")
     except Exception as e:
         prefect_logger.error(f"Error in message processing flow: {e}")
