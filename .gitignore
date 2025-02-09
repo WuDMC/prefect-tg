@@ -9,3 +9,6 @@ __pycache__/
 .env
 /volume/
 /geo-roulette-480054a3a731.json
+/terraform/terraform-devenv-5718cdde5677.json
+/terraform/terraform.tfstate
+/terraform/terraform.tfstate.backup

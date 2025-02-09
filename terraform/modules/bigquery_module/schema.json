@@ -1,0 +1,65 @@
+{
+  "fields": [
+    {
+      "name": "id",
+      "type": "INTEGER",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "empty",
+      "type": "BOOLEAN",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "text",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "datetime",
+      "type": "TIMESTAMP",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "date",
+      "type": "DATE",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "link",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "sender_chat_id",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "sender_chat_user_name",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "user",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "user_name",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "chat_id",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "ts",
+      "type": "TIMESTAMP",
+      "mode": "NULLABLE",
+      "default": "CURRENT_TIMESTAMP()"
+    }
+  ]
+}
