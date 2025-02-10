@@ -12,3 +12,5 @@ __pycache__/
 /terraform/terraform-devenv-5718cdde5677.json
 /terraform/terraform.tfstate
 /terraform/terraform.tfstate.backup
+/config/visionz.env
+**.env
