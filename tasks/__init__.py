@@ -2,7 +2,8 @@ from prefect import task
 from prefect.logging import get_run_logger
 import os
 import logging
-
+from dotenv import load_dotenv
+from config import Config
 from tg_jobs_parser.google_cloud_helper.storage_manager import StorageManager
 from tg_jobs_parser.utils import json_helper
 from tg_jobs_parser.configs import vars, volume_folder_path
@@ -14,7 +15,10 @@ logging.basicConfig(
 )
 logging.getLogger("tg_jobs_parser").setLevel(logging.INFO)
 
+load_dotenv()
+env_file = os.getenv('PROJECT_VARS')
 logger = logging.getLogger()
+global_config = Config(env_file=env_file)
 
 if not logger.handlers:
     console_handler = logging.StreamHandler()
@@ -31,7 +35,7 @@ def list_msgs():
     prefect_logger = get_run_logger()
 
     prefect_logger.info("Listing messages from storage.")
-    storage_manager = StorageManager()
+    storage_manager = StorageManager(json_config=global_config.to_json())
     return storage_manager.list_msgs_with_metadata()
 
 
@@ -41,7 +45,7 @@ def get_metadata_from_cloud(path):
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing StorageManager...")
-        storage_manager = StorageManager()
+        storage_manager = StorageManager(json_config=global_config.to_json())
         prefect_logger.info("Getting metadata from cloud")
         storage_manager.download_blob(blob_name=storage_manager.config.source_channels_blob,
                                       path=path)
@@ -59,7 +63,7 @@ def parse_tg_dialogs(tg_channels_file, cloud_channels_file, force=False):
         prefect_logger.info("Initializing TelegramParser...")
         from tg_jobs_parser.telegram_helper.telegram_parser import TelegramParser
 
-        tg_parser = TelegramParser()
+        tg_parser = TelegramParser(json_config=global_config.to_json())
         prefect_logger.info("Start parsing tg dialogs")
         channels_data = tg_parser.get_channels()
         json_helper.save_to_json(data=channels_data, path=tg_channels_file)
@@ -87,7 +91,7 @@ def update_target_ids(
         prefect_logger.info("Initializing TelegramParser...")
         from tg_jobs_parser.telegram_helper.telegram_parser import TelegramParser
 
-        tg_parser = TelegramParser()
+        tg_parser = TelegramParser(json_config=global_config.to_json())
         prefect_logger.info("Updating metadata locally")
         cloud_channels = json_helper.read_json(cloud_channels_file) or {}
         # tg_channels = json_helper.read_json(tg_channels_file)
@@ -127,7 +131,7 @@ def update_metadata_in_cloud(source_file_name):
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing StorageManager...")
-        storage_manager = StorageManager()
+        storage_manager = StorageManager(json_config=global_config.to_json())
         prefect_logger.info("Updating metadata in cloud")
         storage_manager.update_channels_metadata(source_file_name=source_file_name)
         prefect_logger.info(f"Metadata in cloud updated with {source_file_name}")
@@ -142,7 +146,7 @@ def check_channel_stats():
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Initializing StorageManager...")
-        storage_manager = StorageManager()
+        storage_manager = StorageManager(json_config=global_config.to_json())
         prefect_logger.info("Checking stats")
         storage_manager.check_channel_stats(type_filter="ChatType.CHANNEL")
         statistics = storage_manager.statistics
@@ -189,10 +193,10 @@ def parse_messages(path):
     try:
         prefect_logger.info("Start parsing messages")
 
-        storage_manager = StorageManager()
+        storage_manager = StorageManager(json_config=global_config.to_json())
         from tg_jobs_parser.telegram_helper.telegram_parser import TelegramParser
 
-        msg_parser = TelegramParser()
+        msg_parser = TelegramParser(json_config=global_config.to_json())
         if not os.path.exists(path):
             prefect_logger.info("Downloading channels metadata")
             storage_manager.download_blob(blob_name=storage_manager.config.source_channels_blob,
@@ -238,7 +242,7 @@ def upload_msgs_files_to_storage(cl_file_path, up_file_path, output_path):
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Uploading message files to storage")
-        storage_manager = StorageManager()
+        storage_manager = StorageManager(json_config=global_config.to_json())
         results = {}
 
         for filename in os.listdir(volume_folder_path):

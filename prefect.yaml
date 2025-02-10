@@ -13,7 +13,7 @@ build:
     requires: prefect-docker>=0.3.1
     image_name: europe-southwest1-docker.pkg.dev/prefect-wu/prefect/prefect-tg
     tag: latest
-    dockerfile: Dockerfile
+    dockerfile: _Dockerfile
 
 # push section allows you to manage if and how this project is uploaded to remote locations
 push:
