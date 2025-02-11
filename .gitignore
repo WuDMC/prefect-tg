@@ -14,3 +14,5 @@ __pycache__/
 /terraform/terraform.tfstate.backup
 /config/visionz.env
 **.env
+**key.json
+iam.json**
