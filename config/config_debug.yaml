@@ -1,0 +1,31 @@
+prefect:
+  workspace: "${WORKSPACE}"
+  api_key: "${PREFECT_API_KEY}"
+telegram:
+  api_hash: "${TG_API_HASH}"
+  api_id: "${TG_API_ID}"
+  session_string: "${SESSION_STRING}"
+  limit: "${MAX_LIMIT}"
+  start_date: "${START_DATE}"
+  account_name: "${ACCOUNT_NAME}"
+  black_list: "${BLACK_LIST}"
+  white_list: "${WHITE_LIST}"
+google_cloud:
+  creds_file: "${GOOGLE_APPLICATION_CREDENTIALS}"
+  creds_string: "${GCP_CREDS}"
+  project_id: "${GCP_PROJECT_ID}"
+  bucket: "${GCS_BUCKET_NAME}"
+  backup_bucket: "${GCS_BACKUP_BUCKET_NAME}"
+  channel_path: "${CHANNEL_METADATA_PATH}"
+  msgs_path: "${MSGS_DATA_PATH}"
+  dataset: "${BIGQUERY_DATASET}"
+  table: "${BIGQUERY_RAW_MESSAGES_TABLE}"
+terraform:
+  gcp_project: "${GCP_PROJECT_ID}"
+  bq_dataset: "${BIGQUERY_DATASET}"
+  bq_table: "${BIGQUERY_RAW_MESSAGES_TABLE}"
+  gcp_region: "europe-west1"
+general:
+  home: "${VISIONZ_HOME}"
+
+

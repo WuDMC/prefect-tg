@@ -16,11 +16,9 @@ class Config:
         """
 
         # Load .env file
-        env_file = env_file if env_file else None
+        load_dotenv()
         if env_file and os.path.exists(env_file):
             load_dotenv(env_file)
-        else:
-            load_dotenv()
 
         # Select YAML config file
         current_dir = os.path.dirname(__file__)

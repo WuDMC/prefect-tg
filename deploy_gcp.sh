@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ "$#" -lt 3 ]; then
-   echo "Usage:  ./create_projects.sh billingid project-prefix  email1 [email2 [email3 ...]]]"
-   echo "   eg:  ./create_projects.sh 0X0X0X-0X0X0X-0X0X0X learnml-20170106  somebody@gmail.com someother@gmail.com"
+   echo "Usage:  ./deploy_gcp.sh billingid project-prefix  email"
+   echo "   eg:  ./deploy_gcp.sh 0X0X0X-0X0X0X-0X0X0X learnml-20170106  somebody@gmail.com someother@gmail.com"
    exit
 fi
 
@@ -37,18 +37,38 @@ gcloud alpha billing accounts projects link $PROJECT_ID --billing-account=$ACCOU
 #done
 
 # Create service account and generate key
-SERVICE_ACCOUNT_NAME="sa-${PROJECT_PREFIX}"
+SERVICE_ACCOUNT_NAME="terraform-sa-${PROJECT_PREFIX}"
 gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME --project=${PROJECT_ID} --display-name "Service Account for ${PROJECT_PREFIX}"
 
 gcloud iam service-accounts keys create "${SERVICE_ACCOUNT_NAME}-key.json" --iam-account=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com --project=${PROJECT_ID}
+
+# Назначение всех необходимых ролей
+ROLES=(
+  "roles/editor"
+  "roles/bigquery.admin"
+  "roles/storage.admin"
+  "roles/serviceusage.admin"
+  "roles/cloudfunctions.admin"
+  "roles/cloudbuild.builds.editor"
+  "roles/artifactregistry.admin"
+  "roles/viewer"
+)
+
+for role in "${ROLES[@]}"; do
+  gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="${role}"
+done
 
 echo "Service account key saved to ${SERVICE_ACCOUNT_NAME}-key.json"
 
 FOLDER_PATH=$(pwd)
 ENV_FILE=".env"
 SA_KEY_FILE="${FOLDER_PATH}/${SERVICE_ACCOUNT_NAME}-key.json"
+PROJECT_VARS="/home/wudmc/PycharmProjects/prefect-tg/config/visionz.env"
 
 echo "GOOGLE_APPLICATION_CREDENTIALS=${SA_KEY_FILE}" > $ENV_FILE
 echo "GCP_PROJECT_ID=${PROJECT_ID}" >> $ENV_FILE
 echo "VISIONZ_HOME=${FOLDER_PATH}" >> $ENV_FILE
+echo "PROJECT_VARS=${PROJECT_VARS}" >> $ENV_FILE
 echo ".env file updated with project credentials."
