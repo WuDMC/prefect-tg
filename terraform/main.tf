@@ -11,6 +11,7 @@ terraform {
 provider "google" {
   project = var.gcp_project
   region  = var.gcp_region
+  credentials = file(var.credentials)
 }
 
 module "enable_apis" {
