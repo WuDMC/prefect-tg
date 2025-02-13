@@ -31,6 +31,7 @@ gcloud alpha projects set-iam-policy $PROJECT_ID iam.json.new
 # billing
 gcloud alpha billing accounts projects link $PROJECT_ID --billing-account=$ACCOUNT_ID
 
+
 #for SERVICE in "containerregistry" "container" "cloudbuild"; do
 #  gcloud services enable ${SERVICE}.googleapis.com --project=${PROJECT_ID} --async
 #  sleep 1
