@@ -84,12 +84,14 @@ def main():
     print("\n📄 [3/5] Planning Terraform deployment...")
     var_args = " ".join([f"-var '{key}={value}'" for key, value in terraform_vars.items()])
     var_args += f" -var 'credentials={service_account_path}'"
-    run_command(f"terraform plan -input=false {var_args}", cwd=terraform_dir)
 
-    # Apply Terraform changes
+    # Сохраняем план в файл tfplan
+    run_command(f"terraform plan -input=false -out=tfplan {var_args}", cwd=terraform_dir)
+
+    # Apply Terraform changes из сохраненного плана
     print("\n🚀 [4/5] Applying Terraform changes...")
-    print(f"terraform apply -auto-approve -input=false {var_args}")
-    run_command(f"terraform apply -auto-approve -input=false {var_args}", cwd=terraform_dir)
+    print("terraform apply -auto-approve tfplan")
+    run_command("terraform apply -auto-approve tfplan", cwd=terraform_dir)
 
     print("\n✅ [5/5] Deployment completed successfully!")
 
