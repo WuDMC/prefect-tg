@@ -1,5 +1,4 @@
-{
-  "fields": [
+[
     {
       "name": "id",
       "type": "INTEGER",
@@ -61,5 +60,4 @@
       "mode": "NULLABLE",
       "default": "CURRENT_TIMESTAMP()"
     }
-  ]
-}
+]
