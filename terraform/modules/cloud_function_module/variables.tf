@@ -8,6 +8,11 @@ variable "gcp_region" {
   type        = string
 }
 
+variable "gcp_bucket" {
+  description = "BigQuery bucket Name"
+  type        = string
+}
+
 variable "function_name" {
   description = "Name of the Cloud Function"
   type        = string

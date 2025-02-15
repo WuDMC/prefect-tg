@@ -18,6 +18,11 @@ variable "bq_table" {
   type        = string
 }
 
+variable "gcp_bucket" {
+  description = "BigQuery Dataset Name"
+  type        = string
+}
+
 variable "function_name" {
   description = "Name of the Cloud Function"
   type        = string

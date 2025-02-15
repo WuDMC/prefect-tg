@@ -16,3 +16,6 @@ __pycache__/
 **.env
 **key.json
 iam.json**
+/terraform/tfplan
+/terraform/backend.tf
+/terraform/.terraform.lock.hcl

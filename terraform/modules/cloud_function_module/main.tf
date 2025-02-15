@@ -44,5 +44,9 @@ resource "google_cloudfunctions_function" "example_function" {
   entry_point = var.function_entry_point
   source_archive_bucket = google_storage_bucket.function_code_bucket.name
   source_archive_object = google_storage_bucket_object.function_code.name
-  trigger_http = true
+#  trigger_http = true
+  event_trigger {
+    event_type = "google.storage.object.finalize" # Событие при загрузке нового файла
+    resource   = var.gcp_bucket # Бакет, который мы создали ранее
+  }
 }
