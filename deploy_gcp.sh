@@ -45,6 +45,8 @@ gcloud iam service-accounts keys create "${SERVICE_ACCOUNT_NAME}-key.json" --iam
 
 # Назначение всех необходимых ролей
 ROLES=(
+  "roles/run.admin"
+  "roles/iam.serviceAccountUser"
   "roles/editor"
   "roles/bigquery.admin"
   "roles/storage.admin"
@@ -63,13 +65,18 @@ done
 
 echo "Service account key saved to ${SERVICE_ACCOUNT_NAME}-key.json"
 
+
+
 FOLDER_PATH=$(pwd)
 ENV_FILE=".env"
 SA_KEY_FILE="${FOLDER_PATH}/${SERVICE_ACCOUNT_NAME}-key.json"
 PROJECT_VARS="/home/wudmc/PycharmProjects/prefect-tg/config/visionz.env"
 
 echo "GOOGLE_APPLICATION_CREDENTIALS=${SA_KEY_FILE}" > $ENV_FILE
+echo "SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME}" >> $ENV_FILE
 echo "GCP_PROJECT_ID=${PROJECT_ID}" >> $ENV_FILE
 echo "VISIONZ_HOME=${FOLDER_PATH}" >> $ENV_FILE
 echo "PROJECT_VARS=${PROJECT_VARS}" >> $ENV_FILE
 echo ".env file updated with project credentials."
+
+
