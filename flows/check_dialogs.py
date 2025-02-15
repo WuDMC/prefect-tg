@@ -3,6 +3,7 @@ from prefect.logging import get_run_logger
 import tasks
 import os
 from tg_jobs_parser.configs import volume_folder_path
+from prefect.docker import DockerImage
 
 CL_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_gsc_channels_metadata.json")
 TG_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_tg_channels_metadata.json")
@@ -41,15 +42,35 @@ def find_msg_4parsing():
 
 
 if __name__ == "__main__":
-    find_msg_4parsing()
-    STATS_TEMPLATE = {
-            "channels_total": 0,
-            "channels_done": 0,
-            "total_downloaded": 0,
-            "download_scope": 0,
-            "total_missed": 0,
-            "channels_to_update": 0,
-            "bad_channels": 0,
-            "bad_channels_ids": [],
-            "to_upd_channels_ids": [],
-        }
+    from dotenv import load_dotenv
+    from config import Config
+    # ✅ Load environment variables
+    load_dotenv()
+
+    # ✅ Read config file path from .env
+    env_file = os.getenv('PROJECT_VARS')
+    if not env_file:
+        print("❌ PROJECT_VARS is not set in .env file!")
+        exit(1)
+
+    # ✅ Load configuration from the specified file
+    try:
+        config = Config(debug=True, env_file=env_file)
+
+    except Exception as e:
+        print(f"❌ Error loading configuration: {e}")
+        exit(1)
+
+    project = config.get("prefect", "project_name")
+    work_pool = config.get("prefect", "work_pool_name")
+
+    find_msg_4parsing.deploy(
+        name=f"{project}-find_msg_4parsing",
+        work_pool_name=work_pool,
+        image=DockerImage(
+            name="my-image:latest",
+            platform="linux/amd64",
+            dockerfile="_Dockerfile"
+        ),
+        cron="0 0,6,12,18 * * *",
+    )

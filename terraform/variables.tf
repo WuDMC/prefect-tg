@@ -23,22 +23,22 @@ variable "gcp_bucket" {
   type        = string
 }
 
-variable "function_name" {
-  description = "Name of the Cloud Function"
+variable "prefect_api_url" {
+  description = "Prefect api url"
   type        = string
-  default     = "msgs2bq"
+}
+variable "prefect_api_key" {
+  description = "Prefect api key"
+  type        = string
 }
 
-variable "function_entry_point" {
-  description = "Entry point for the Cloud Function"
+variable "prefect_work_pool" {
+  description = "Prefect work pool name"
   type        = string
-  default = "gcs_to_bigquery"
 }
-
-variable "function_runtime" {
-  description = "Runtime for the Cloud Function"
+variable "service_account" {
+  description = "gcp service account name"
   type        = string
-  default     = "python310"
 }
 
 variable "credentials" {

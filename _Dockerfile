@@ -1,17 +1,19 @@
 FROM prefecthq/prefect:3.1.14-python3.10
 
+ARG VIZIONS_HOME
+ENV VIZIONS_HOME=${VIZIONS_HOME}
 # Установить зависимости
 COPY requirements.txt /opt/prefect/prefect-tg/requirements.txt
 RUN python -m pip install -r /opt/prefect/prefect-tg/requirements.txt
 
 # Скопировать весь проект
-COPY . /opt/prefect/prefect-tg/
+COPY . ${VIZIONS_HOME}
 
 # Переключиться в директорию проекта
-WORKDIR /opt/prefect/prefect-tg/
+WORKDIR ${VIZIONS_HOME}
 
 # Установить PYTHONPATH
-ENV PYTHONPATH="/opt/prefect/prefect-tg/libs/tg_jobs_parser_module:$PYTHONPATH"
+ENV PYTHONPATH="${VIZIONS_HOME}/libs/tg_jobs_parser_module:$PYTHONPATH"
 
 # Тест 1: Проверить доступность модуля через PYTHONPATH
 RUN python -c "import sys; print('PYTHONPATH:', sys.path)" && \

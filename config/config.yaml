@@ -1,6 +1,11 @@
 prefect:
-  workspace: "${WORKSPACE}"
+  account: "${PREFECT_ACC_ID}"
+  workspace: "${PREFECT_WORKSPACE}"
   api_key: "${PREFECT_API_KEY}"
+  project_name: "${GCP_PROJECT_ID}"
+  prefect_version: "3.1.14"
+  work_dir: "${VISIONZ_HOME}"
+  work_pool_type: "cloud-run"
 telegram:
   api_hash: "${TG_API_HASH}"
   api_id: "${TG_API_ID}"
@@ -25,6 +30,10 @@ terraform:
   gcp_bucket: "${GCS_BUCKET_NAME}"
   bq_dataset: "${BIGQUERY_DATASET}"
   bq_table: "${BIGQUERY_RAW_MESSAGES_TABLE}"
+  service_account: "${SERVICE_ACCOUNT}"
+  prefect_api_key: "${PREFECT_API_KEY}"
+  prefect_api_url: "${PREFECT_API_URL}"
+  prefect_work_pool: "gcp-runner"
   gcp_region: "europe-west1"
 general:
   home: "${VISIONZ_HOME}"

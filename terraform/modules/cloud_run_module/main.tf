@@ -2,6 +2,7 @@ resource "google_cloud_run_service" "prefect_worker" {
   name     = "prefect-worker"
   location = var.gcp_region # Укажи нужный регион
 
+
   template {
     spec {
       containers {

@@ -25,7 +25,8 @@ module "enable_apis" {
     "artifactregistry.googleapis.com",     # Для хранения контейнеров
     "cloudbuild.googleapis.com",           # CI/CD для сборки Cloud Functions
     "eventarc.googleapis.com",             # EventArc для триггеров Cloud Storage
-    "pubsub.googleapis.com"                # Pub/Sub, требуется для Cloud Functions с GCS-триггером
+    "pubsub.googleapis.com",              # Pub/Sub, требуется для Cloud Functions с GCS-триггером
+    "run.googleapis.com"
   ]
 }
 # Подключение модуля для BigQuery
@@ -53,7 +54,19 @@ module "cloud_functions" {
   gcp_bucket        = var.gcp_bucket
   bq_dataset        = var.bq_dataset
   bq_table          = var.bq_table
-  function_name     = var.function_name
-  function_entry_point = var.function_entry_point
-  runtime           = var.function_runtime
+
+  depends_on = [module.enable_apis]
+
+}
+
+module "cloud_run" {
+  source               = "./modules/cloud_run_module"
+  gcp_project          = var.gcp_project
+  gcp_region           = var.gcp_region
+  prefect_api_url      = var.prefect_api_url
+  prefect_api_key      = var.prefect_api_key
+  prefect_work_pool    = var.prefect_work_pool
+  service_account      = var.service_account
+
+  depends_on = [module.enable_apis]
 }
