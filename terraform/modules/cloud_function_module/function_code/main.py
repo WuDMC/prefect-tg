@@ -38,9 +38,10 @@ def gcs_to_bigquery(cloud_event):
 
 
     # Параметры BigQuery
-    project_id = "terraform-devenv"
-    dataset_id = "tg_jobs"
-    table_id = "messages_raw_v3"
+    project_id = os.environ.get("PROJECT_ID")
+    dataset_id = os.environ.get("DATASET_ID")
+    table_id = os.environ.get("TABLE_ID")
+
     table_ref = f"{project_id}.{dataset_id}.{table_id}"
 
     # Путь к файлу в GCS

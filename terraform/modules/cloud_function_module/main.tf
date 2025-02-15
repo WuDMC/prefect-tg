@@ -49,4 +49,10 @@ resource "google_cloudfunctions_function" "example_function" {
     event_type = "google.storage.object.finalize" # Событие при загрузке нового файла
     resource   = var.gcp_bucket # Бакет, который мы создали ранее
   }
+
+  environment_variables = {
+    PROJECT_ID  = var.gcp_project
+    DATASET_ID  = var.bq_dataset
+    TABLE_ID    = var.bq_table
+  }
 }

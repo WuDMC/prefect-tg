@@ -51,6 +51,8 @@ module "cloud_functions" {
   gcp_project       = var.gcp_project
   gcp_region        = var.gcp_region
   gcp_bucket        = var.gcp_bucket
+  bq_dataset        = var.bq_dataset
+  bq_table          = var.bq_table
   function_name     = var.function_name
   function_entry_point = var.function_entry_point
   runtime           = var.function_runtime
