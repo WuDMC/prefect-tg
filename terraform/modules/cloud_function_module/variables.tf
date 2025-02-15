@@ -26,14 +26,16 @@ variable "bq_table" {
 variable "function_name" {
   description = "Name of the Cloud Function"
   type        = string
+  default     = "msgs2bq"
 }
 
 variable "function_entry_point" {
-  description = "Entry point of the Cloud Function"
+  description = "Entry point for the Cloud Function"
   type        = string
+  default = "gcs_to_bigquery"
 }
 
-variable "runtime" {
+variable "function_runtime" {
   description = "Runtime for the Cloud Function"
   type        = string
   default     = "python310"

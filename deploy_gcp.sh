@@ -10,6 +10,8 @@ ACCOUNT_ID=$1
 shift
 PROJECT_PREFIX=$1
 shift
+REGION=$1
+shift
 EMAIL=$1
 
 gcloud components update
@@ -22,6 +24,10 @@ echo "Creating project $PROJECT_ID for $EMAIL ... "
 gcloud projects create $PROJECT_ID
 sleep 2
 
+gcloud config set project $PROJECT_ID
+
+gcloud compute project-info add-metadata \
+    --metadata google-compute-default-region=$REGION,google-compute-default-zone=$REGION
 # editor
 rm -f iam.json.*
 gcloud alpha projects get-iam-policy $PROJECT_ID --format=json > iam.json.orig
@@ -32,7 +38,7 @@ gcloud alpha projects set-iam-policy $PROJECT_ID iam.json.new
 gcloud alpha billing accounts projects link $PROJECT_ID --billing-account=$ACCOUNT_ID
 
 
-#for SERVICE in "containerregistry" "container" "cloudbuild"; do
+#for SERVICE in "compute.googleapis.com" "container" "cloudbuild"; do
 #  gcloud services enable ${SERVICE}.googleapis.com --project=${PROJECT_ID} --async
 #  sleep 1
 #done
@@ -54,7 +60,10 @@ ROLES=(
   "roles/cloudfunctions.admin"
   "roles/cloudbuild.builds.editor"
   "roles/artifactregistry.admin"
-  "roles/viewer"
+  "roles/owner" # need to change to role who can create service accounts
+  "roles/serviceusage.serviceUsageAdmin"  # Содержит serviceusage.services.enable
+  "roles/iam.serviceAccountAdmin"  # Содержит iam.serviceAccounts.create
+  "roles/iam.serviceAccountKeyAdmin"
 )
 
 for role in "${ROLES[@]}"; do
@@ -71,12 +80,23 @@ FOLDER_PATH=$(pwd)
 ENV_FILE=".env"
 SA_KEY_FILE="${FOLDER_PATH}/${SERVICE_ACCOUNT_NAME}-key.json"
 PROJECT_VARS="/home/wudmc/PycharmProjects/prefect-tg/config/visionz.env"
+PREFECT_WORK_POOL_NAME="${PROJECT_ID}-gcp-worker"
 
 echo "GOOGLE_APPLICATION_CREDENTIALS=${SA_KEY_FILE}" > $ENV_FILE
-echo "SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME}" >> $ENV_FILE
+# shellcheck disable=SC2129
+echo "SERVICE_ACCOUNT=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" >> $ENV_FILE
 echo "GCP_PROJECT_ID=${PROJECT_ID}" >> $ENV_FILE
+echo "GCP_REGION=${REGION}" >> $ENV_FILE
 echo "VISIONZ_HOME=${FOLDER_PATH}" >> $ENV_FILE
 echo "PROJECT_VARS=${PROJECT_VARS}" >> $ENV_FILE
+echo "PREFECT_WORK_POOL_NAME=${PREFECT_WORK_POOL_NAME}" >> $ENV_FILE
+
 echo ".env file updated with project credentials."
+
+echo "creating work pool in prefect for new gcp project"
+
+#prefect work-pool create --type="cloud-run" "${PREFECT_WORK_POOL_NAME}"
+prefect work-pool create --type cloud-run:push --provision-infra --overwrite "${PREFECT_WORK_POOL_NAME}"
+
 
 
