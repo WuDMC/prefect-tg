@@ -22,6 +22,7 @@ google_cloud:
   table: "${BIGQUERY_RAW_MESSAGES_TABLE}"
 terraform:
   gcp_project: "${GCP_PROJECT_ID}"
+  gcp_bucket: "${GCS_BUCKET_NAME}"
   bq_dataset: "${BIGQUERY_DATASET}"
   bq_table: "${BIGQUERY_RAW_MESSAGES_TABLE}"
   gcp_region: "europe-west1"
