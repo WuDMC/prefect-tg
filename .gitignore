@@ -20,3 +20,4 @@ iam.json**
 /terraform/backend.tf
 /terraform/.terraform.lock.hcl
 /terraform/modules/cloud_function_module/function_code.zip
+/terraform/.terraform/
