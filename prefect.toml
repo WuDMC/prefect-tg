@@ -3,4 +3,4 @@
 level = "INFO"
 
 [cli]
-prompt = "False"
+#prompt = "False"

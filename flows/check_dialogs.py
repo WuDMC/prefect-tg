@@ -1,17 +1,17 @@
 from prefect import flow
-from prefect.logging import get_run_logger
-import tasks
-import os
-from tg_jobs_parser.configs import volume_folder_path
 from prefect.docker import DockerImage
-
-CL_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_gsc_channels_metadata.json")
-TG_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_tg_channels_metadata.json")
-MG_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_merged_channels_metadata.json")
+import os
 
 
 @flow
 def find_msg_4parsing():
+    from prefect.logging import get_run_logger
+    import tasks
+    from tg_jobs_parser.configs import volume_folder_path
+
+    CL_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_gsc_channels_metadata.json")
+    TG_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_tg_channels_metadata.json")
+    MG_CHANNELS_LOCAL_PATH = os.path.join(volume_folder_path, "f1.1_merged_channels_metadata.json")
     # 1
     prefect_logger = get_run_logger()
     try:
@@ -63,14 +63,19 @@ if __name__ == "__main__":
 
     project = config.get("prefect", "project_name")
     work_pool = config.get("prefect", "work_pool_name")
-
-    find_msg_4parsing.deploy(
-        name=f"{project}-find_msg_4parsing",
-        work_pool_name=work_pool,
-        image=DockerImage(
-            name="my-image:latest",
-            platform="linux/amd64",
-            dockerfile="_Dockerfile"
-        ),
-        cron="0 0,6,12,18 * * *",
-    )
+    find_msg_4parsing()
+    # find_msg_4parsing.deploy(
+    #     name=f"{project}-find_msg_4parsing",
+    #     work_pool_name=work_pool,
+    #     image=DockerImage(
+    #         name=f"{project}-image:latest",
+    #         platform="linux/amd64",
+    #         dockerfile="_Dockerfile",
+    #     ),
+    #     job_variables={
+    #         "env": {
+    #             "VISIONZ_HOME": os.getenv("VISIONZ_HOME"),
+    #         }
+    #     },
+    #     cron="0 0,6,12,18 * * *",
+    # )
