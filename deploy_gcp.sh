@@ -28,6 +28,10 @@ gcloud config set project $PROJECT_ID
 
 gcloud compute project-info add-metadata \
     --metadata google-compute-default-region=$REGION,google-compute-default-zone=$REGION
+
+gcloud config set run/region $REGION
+gcloud config set compute/region $REGION
+
 # editor
 rm -f iam.json.*
 gcloud alpha projects get-iam-policy $PROJECT_ID --format=json > iam.json.orig
@@ -35,7 +39,7 @@ cat iam.json.orig | sed s'/"bindings": \[/"bindings": \[ \{"members": \["user:'$
 gcloud alpha projects set-iam-policy $PROJECT_ID iam.json.new
 
 # billing
-gcloud alpha billing accounts projects link $PROJECT_ID --billing-account=$ACCOUNT_ID
+gcloud billing projects link $PROJECT_ID --billing-account=$ACCOUNT_ID
 
 
 #for SERVICE in "compute.googleapis.com" "container" "cloudbuild"; do
@@ -44,7 +48,7 @@ gcloud alpha billing accounts projects link $PROJECT_ID --billing-account=$ACCOU
 #done
 
 # Create service account and generate key
-SERVICE_ACCOUNT_NAME="terraform-sa-${PROJECT_PREFIX}"
+SERVICE_ACCOUNT_NAME="terraform-sa-${PROJECT_PREFIX}-dev"
 gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME --project=${PROJECT_ID} --display-name "Service Account for ${PROJECT_PREFIX}"
 
 gcloud iam service-accounts keys create "${SERVICE_ACCOUNT_NAME}-key.json" --iam-account=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com --project=${PROJECT_ID}
@@ -79,7 +83,7 @@ echo "Service account key saved to ${SERVICE_ACCOUNT_NAME}-key.json"
 FOLDER_PATH=$(pwd)
 ENV_FILE=".env"
 SA_KEY_FILE="${FOLDER_PATH}/${SERVICE_ACCOUNT_NAME}-key.json"
-PROJECT_VARS="/home/wudmc/PycharmProjects/prefect-tg/config/visionz.env"
+PROJECT_VARS="${FOLDER_PATH}/config/visionz.env"
 PREFECT_WORK_POOL_NAME="${PROJECT_ID}-gcp-worker"
 
 echo "GOOGLE_APPLICATION_CREDENTIALS=${SA_KEY_FILE}" > $ENV_FILE
@@ -95,8 +99,10 @@ echo ".env file updated with project credentials."
 
 echo "creating work pool in prefect for new gcp project"
 
-#prefect work-pool create --type="cloud-run" "${PREFECT_WORK_POOL_NAME}"
-prefect work-pool create --type cloud-run:push --provision-infra --overwrite "${PREFECT_WORK_POOL_NAME}"
+BASE_TEMPLATE=$(prefect work-pool get-default-base-job-template -t cloud-run:push)
+echo "$BASE_TEMPLATE" | sed "s/{{ region }}/$REGION/g" | sed "s/us-central1/$REGION/g"  > base-job-template.json
+
+prefect work-pool create --type cloud-run:push --provision-infra --overwrite --base-job-template base-job-template.json "${PREFECT_WORK_POOL_NAME}"
 
 
 

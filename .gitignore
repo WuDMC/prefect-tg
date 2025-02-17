@@ -21,3 +21,4 @@ iam.json**
 /terraform/.terraform.lock.hcl
 /terraform/modules/cloud_function_module/function_code.zip
 /terraform/.terraform/
+/base-job-template.json
