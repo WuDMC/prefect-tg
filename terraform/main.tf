@@ -59,14 +59,14 @@ module "cloud_functions" {
 
 }
 
-module "cloud_run" {
-  source               = "./modules/cloud_run_module"
-  gcp_project          = var.gcp_project
-  gcp_region           = var.gcp_region
-  prefect_api_url      = var.prefect_api_url
-  prefect_api_key      = var.prefect_api_key
-  prefect_work_pool    = var.prefect_work_pool
-  service_account      = var.service_account
-
-  depends_on = [module.enable_apis]
-}
+#module "cloud_run" {
+#  source               = "./modules/cloud_run_module"
+#  gcp_project          = var.gcp_project
+#  gcp_region           = var.gcp_region
+#  prefect_api_url      = var.prefect_api_url
+#  prefect_api_key      = var.prefect_api_key
+#  prefect_work_pool    = var.prefect_work_pool
+#  service_account      = var.service_account
+#
+#  depends_on = [module.enable_apis]
+#}
