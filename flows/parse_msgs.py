@@ -25,7 +25,8 @@ def parse_msg_n_load2gsc():
         # parse msgs  and save to files
         tasks.parse_messages(CL_CHANNELS_LOCAL_PATH)
         # load to gcs parsed msgs
-        prefect_logger.info(f'msg files ready to upload {len([file for file in os.listdir(volume_folder_path) if file.startswith("msgs")])}')
+        prefect_logger.info(
+            f'msg files ready to upload {len([file for file in os.listdir(volume_folder_path) if file.startswith("msgs")])}')
         tasks.upload_msgs_files_to_storage(cl_file_path=CL_CHANNELS_LOCAL_PATH,
                                            up_file_path=UP_CHANNELS_LOCAL_PATH,
                                            output_path=MG_CHANNELS_LOCAL_PATH)
@@ -43,13 +44,17 @@ def parse_msg_n_load2gsc():
         raise
 
 
-
 if __name__ == "__main__":
     from dotenv import load_dotenv
     from config import Config
+
     # ✅ Load environment variables
     load_dotenv()
 
+    project_env_file = os.getenv('PROJECT_VARS')
+    local_home_folder = os.getenv("VISIONZ_HOME")
+    docker_app_folder = '/app'
+    gcp_creds = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     # ✅ Read config file path from .env
     env_file = os.getenv('PROJECT_VARS')
     if not env_file:
@@ -77,7 +82,10 @@ if __name__ == "__main__":
         ),
         job_variables={
             "env": {
-                "VISIONZ_HOME": os.getenv("VISIONZ_HOME"),
+                "VISIONZ_HOME": docker_app_folder,
+                "GOOGLE_APPLICATION_CREDENTIALS": gcp_creds.replace(local_home_folder, docker_app_folder),
+                "PROJECT_VARS": project_env_file.replace(local_home_folder, docker_app_folder),
+                "GCP_REGION": os.getenv("GCP_REGION")
             }
         },
         cron="0 0,6,12,18 * * *",
