@@ -16,7 +16,6 @@ def parse_msg_n_load2gsc():
     prefect_logger = get_run_logger()
     try:
         prefect_logger.info("Starting message processing flow")
-
         tasks.check_channel_stats()
         gsc_files = tasks.list_msgs()
         old_count = len(gsc_files)
@@ -71,7 +70,7 @@ if __name__ == "__main__":
 
     project = config.get("prefect", "project_name")
     work_pool = config.get("prefect", "work_pool_name")
-
+    parse_msg_n_load2gsc()
     parse_msg_n_load2gsc.deploy(
         name=f"{project}-parse_msg_n_load2gsc",
         work_pool_name=work_pool,
