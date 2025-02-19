@@ -86,7 +86,8 @@ if __name__ == "__main__":
                 "GOOGLE_APPLICATION_CREDENTIALS": gcp_creds.replace(local_home_folder, docker_app_folder),
                 "PROJECT_VARS": project_env_file.replace(local_home_folder, docker_app_folder),
                 "GCP_REGION": os.getenv("GCP_REGION")
-            }
-        },
-        cron="0 0,6,12,18 * * *",
+            },
+            "keep_job": True,
+            "timeout": 3600
+        }
     )
