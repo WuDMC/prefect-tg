@@ -7,6 +7,7 @@ from config import Config
 from tg_jobs_parser.google_cloud_helper.storage_manager import StorageManager
 from tg_jobs_parser.utils import json_helper
 from tg_jobs_parser.configs import vars, volume_folder_path
+from prefect.concurrency.sync import rate_limit
 
 
 logging.basicConfig(
@@ -54,6 +55,12 @@ def get_metadata_from_cloud(path):
         prefect_logger.error(f"Error in get_metadata_from_cloud: {e}")
         raise
 
+
+@task
+def check_limits():
+    # need to create limit pools in advance
+    rate_limit("api-calls")
+    rate_limit("log-submissions")
 
 @task
 def parse_tg_dialogs(tg_channels_file, cloud_channels_file, force=False):
