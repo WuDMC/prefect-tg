@@ -1,6 +1,7 @@
 from prefect import task
 from prefect.logging import get_run_logger
 import os
+from time import sleep
 import logging
 from dotenv import load_dotenv
 from config import Config
@@ -224,7 +225,7 @@ def parse_messages(path):
             prefect_logger.info(f"Processed {process_status} from {process_len} channels")
             if channel["status"] == "bad" or channel["type"] != "ChatType.CHANNEL":
                 continue
-
+            sleep(1)
             prefect_logger.info(f"Parsing messages for channel {ch_id}")
             msgs, left, right = msg_parser.run_chat_parser(channel)
             prefect_logger.info(f"Parsed {len(msgs)} messages for channel {ch_id}")
