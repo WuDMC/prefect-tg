@@ -1,6 +1,6 @@
 # Prefect Project
 
-/bin/bash /home/wudmc/PycharmProjects/prefect-tg/deploy_gcp.sh 013763-76D7A4-EBF34A tg-sp-ai-dev mr.quan4i@gmail.com
+/bin/bash /home/wudmc/PycharmProjects/prefect-tg/deploy_gcp.sh REMOVED tg-sp-ai-dev REMOVED_EMAIL
 
 sudo apt update && sudo apt install google-cloud-sdk
 gcloud components update
