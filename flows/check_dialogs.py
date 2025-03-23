@@ -78,7 +78,7 @@ if __name__ == "__main__":
         image=DockerImage(
             name=f"{project}-image:latest",
             platform="linux/amd64",
-            dockerfile="/Users/denismironov/PycharmProjects/prefect-tg/_Dockerfile",
+            dockerfile="_Dockerfile",
         ),
         job_variables={
             "env": {
