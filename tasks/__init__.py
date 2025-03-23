@@ -223,7 +223,7 @@ def parse_messages(path):
                 file.write(str(process_status))
             process_status += 1
             prefect_logger.info(f"Processed {process_status} from {process_len} channels")
-            if channel["status"] == "bad" or channel["type"] != "ChatType.CHANNEL":
+            if channel.get("status") == "bad" or channel.get("type") != "ChatType.CHANNEL":
                 continue
             sleep(1)
             prefect_logger.info(f"Parsing messages for channel {ch_id}")
