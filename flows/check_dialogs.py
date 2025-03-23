@@ -18,6 +18,8 @@ def find_msg_4parsing():
         prefect_logger.info("Starting Telegram Metadata Flow")
         # get ids of messages to parse
         tasks.get_metadata_from_cloud(CL_CHANNELS_LOCAL_PATH)
+        tasks.check_channel_stats()
+
         tasks.parse_tg_dialogs(tg_channels_file=TG_CHANNELS_LOCAL_PATH, cloud_channels_file=CL_CHANNELS_LOCAL_PATH)
         # merge files to update range what to download
         tasks.update_last_updated_ids(
@@ -76,7 +78,7 @@ if __name__ == "__main__":
         image=DockerImage(
             name=f"{project}-image:latest",
             platform="linux/amd64",
-            dockerfile="_Dockerfile",
+            dockerfile="/Users/denismironov/PycharmProjects/prefect-tg/_Dockerfile",
         ),
         job_variables={
             "env": {
