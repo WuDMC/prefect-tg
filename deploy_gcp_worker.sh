@@ -55,8 +55,6 @@ fi
 
 gcloud auth application-default set-quota-project "$WORKER_PROJECT_ID"
 
-gcloud compute project-info add-metadata \
-    --metadata google-compute-default-region=$REGION,google-compute-default-zone=$REGION
 
 gcloud config set run/region $REGION
 gcloud config set compute/region $REGION
