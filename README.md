@@ -4,7 +4,19 @@ A full-stack data engineering pipeline on Google Cloud Platform (GCP) using Pref
 
 ## ✨ Overview
 
-This project automates the collection, parsing, and storage of Telegram channel messages into Google Cloud — leveraging the best of Prefect orchestration, Cloud Run workers, BigQuery analytics, and Pub/Sub triggers.
+This project automates the end-to-end flow of collecting, processing, and storing Telegram messages using a clean and production-grade cloud architecture:
+
+- **📦 Modular Telegram Parsing Logic**  
+  All logic for scraping Telegram channels is packaged into a standalone Python module. It runs inside serverless Cloud Run containers, ensuring clean separation of responsibilities and reusable code.
+
+- **⚙️ Orchestration with Prefect**  
+  Prefect Cloud handles orchestration, triggering parsing jobs on schedule or on demand through registered flows and Cloud Run workers.
+
+- **💾 Data Lake Layers on GCP**  
+  Google Cloud Storage is used for raw data backups and intermediate message files. Parsed data is staged in BigQuery for further analytics, serving as the data lake layer.
+
+- **🚀 Automated Infrastructure Deployment**  
+  All components — from GCP projects to data pipelines — are deployed automatically using Terraform and bash scripts, making onboarding and replication effortless.
 
 🛠️ Tech stack:
 - Google Cloud (GCP): IAM, BigQuery, GCS, Pub/Sub, Cloud Functions, Cloud Run
@@ -60,20 +72,65 @@ BLACK_LIST='["-1", "-2"]' # channel ids
 WHITE_LIST=[]
 ```
 
-## 🪄 Step 1 — Run the interactive deployment
+## 🧪 Step-by-step deployment guide (example)
 
-```bash
-bash deploy_all.sh
-```
+These are the typical steps for deploying this project from scratch:
 
-This script will:
-- Ask for region, email, and billing account (if needed)
-- Optionally create 1 or 2 GCP projects
-- Deploy Terraform infrastructure to the DWH project
-- Set up a Prefect Cloud Run Push Work Pool in the Worker project
-- Deploy 2 Prefect flows
+0. **Install Terraform**
+   Make sure you have [Terraform](https://developer.hashicorp.com/terraform/downloads) installed.
 
-A `.env` file will be generated automatically for local re-use.
+1. **Clone the repository and install dependencies**
+   ```bash
+   git clone https://github.com/WuDMC/prefect-tg.git
+   cd prefect-tg
+   make install
+   ```
+
+2. **Create a Telegram application to get API ID and API Hash**
+   - Follow the steps here: https://core.telegram.org/api/obtaining_api_id
+   - Create the app here: https://my.telegram.org/apps
+
+3. **Generate your session string**
+   Run the following command:
+   ```bash
+   python3 tg_login.py --api_id <your_api_id> --api_hash <your_api_hash>
+   ```
+
+4. **Get Telegram channel IDs to parse**
+   - Use the bot [@getidsbot](https://t.me/getidsbot) to retrieve channel IDs.
+   - Add them to the `.env` file like:
+     ```env
+     WHITE_LIST='["-1001776649308", "-1001432211209", "-1001865511874", "-1001335735566"]'
+     ```
+
+5. **Create an environment file**
+   Example: `config/spain_news.env`  
+   It should contain all the necessary variables (see earlier section for full example).
+
+6. **Run the interactive deployment script**
+   ```bash
+   bash deploy_all.sh
+   ```
+
+   It will print out step-by-step deployment commands after setup.
+
+7. **Manually deploy GCP infrastructure (if needed)**
+   Example:
+   ```bash
+   bash deploy_gcp_dwh.sh <project-id> europe-west1 your@email.com --create <billing-id>
+   python3 terraform_deploy.py
+
+   bash deploy_gcp_worker.sh <project-id> europe-west1 your@email.com
+   ```
+
+8. **Deploy Prefect flows**
+   ```bash
+   PYTHONPATH=$(pwd) python3 flows/check_dialogs.py
+   PYTHONPATH=$(pwd) python3 flows/parse_msgs.py
+   ```
+
+9. **Run the check_dialogs flow once manually**
+   This initializes the metadata/statistics for further parsing.
 
 ## 🔁 Step 2 — Re-run parts manually (optional)
 
@@ -112,28 +169,3 @@ Perfect for showcasing:
 - Prefect work pool orchestration
 - BigQuery ingestion pipelines
 - Real-world ETL/ELT scenarios
-
----
-
-
-сюда запишу что я делал для создания проект
-0 - инсталл террафрм
-1 - гит клоне  и make install
-2 - создаю апп в тг and get api id and api hash
-
-https://core.telegram.org/api/obtaining_api_id 
-https://my.telegram.org/apps
-
-3 - получиаю сешн стринг
- python3 tg_login.py --api_id xxx  --api_hash yyy
-4 - с помощью бота @getidsbot получаю айдишники каналов для парсинга
-и сохраняю в виду
-WHITE_LIST='["-1001776649308", "-1001432211209", "-1001865511874", "-1001335735566"]'
-5 создал енв файл с проектом config/spain_news.env
-6 деплой алл и получаю команды для деплоя по шагам
-7 - деплой гугл проект
-/bin/bash ./deploy_gcp_dwh.sh tg-es-news europe-west1 mr.quan4i@gmail.com --create 014A87-412A23-73F5E4
-python3 terraform_deploy.py
-/bin/bash ./deploy_gcp_worker.sh tg-es-news europe-west1 mr.quan4i@gmail.com
-PYTHONPATH=$(pwd) python3 flows/check_dialogs.py
-PYTHONPATH=$(pwd) python3 flows/parse_msg.py
