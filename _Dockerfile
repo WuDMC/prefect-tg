@@ -1,23 +1,17 @@
 FROM prefecthq/prefect:3.1.14-python3.10
 
 ARG VISIONZ_HOME=/app
-# Установить зависимости
-
 
 COPY . $VISIONZ_HOME
 
-# Переключиться в директорию проекта
 WORKDIR $VISIONZ_HOME
 
 RUN python -m pip install -r requirements.txt
 
-# Установить PYTHONPATH
 ENV PYTHONPATH="$VISIONZ_HOME/libs/tg_jobs_parser_module:$PYTHONPATH"
 
 
-# Тест 1: Проверить доступность модуля через PYTHONPATH
 RUN python -c "import sys; print('PYTHONPATH:', sys.path)" && \
     python -c "import tg_jobs_parser_module" || echo 'PYTHONPATH failed'
 
-# Тест 2: Установить как editable и проверить
 RUN python -m pip install libs/tg_jobs_parser_module || echo 'Editable install failed'
