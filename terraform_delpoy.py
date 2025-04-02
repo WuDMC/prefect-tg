@@ -80,6 +80,7 @@ def main():
     run_command("terraform validate", cwd=terraform_dir)
 
     service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+
     # Plan Terraform changes
     print("\n📄 [3/5] Planning Terraform deployment...")
     var_args = " ".join([f"-var '{key}={value}'" for key, value in terraform_vars.items()])
