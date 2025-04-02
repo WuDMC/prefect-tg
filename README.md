@@ -1,4 +1,4 @@
-# 🚀 Telegram Parser Prefect Project
+# 🚀 VISIONZ
 
 This project automates the end-to-end flow of collecting, processing, and storing Telegram messages using a clean and production-grade cloud architecture:
 
