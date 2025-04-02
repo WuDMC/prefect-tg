@@ -22,3 +22,7 @@ iam.json**
 /terraform/modules/cloud_function_module/function_code.zip
 /terraform/.terraform/
 /base-job-template.json
+.venv/
+.idea/
+__pycache__/
+*.pyc
