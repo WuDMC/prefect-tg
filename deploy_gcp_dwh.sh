@@ -97,6 +97,37 @@ if [ ! -f "${SERVICE_ACCOUNT_NAME}-key.json" ]; then
 fi
 
 # Назначение всех необходимых ролей
+assign_roles_safe() {
+  local project_id="$1"
+  local service_account="$2"
+  shift 2
+  local roles=("$@")
+
+  for role in "${roles[@]}"; do
+    echo "🔐 Assigning role: $role to $service_account@$project_id"
+
+    local success=false
+    for attempt in {1..3}; do
+      if gcloud projects add-iam-policy-binding "$project_id" \
+        --member="serviceAccount:${service_account}@${project_id}.iam.gserviceaccount.com" \
+        --role="$role"; then
+        echo "✅ Role $role assigned successfully"
+        success=true
+        break
+      else
+        echo "⚠️ Failed to assign $role (attempt $attempt), retrying in 2s..."
+        sleep 2
+      fi
+    done
+
+    if [ "$success" = false ]; then
+      echo "❌ Failed to assign role $role after 3 attempts."
+    fi
+
+    sleep 1
+  done
+}
+
 ROLES=(
   "roles/run.admin"
   "roles/iam.serviceAccountUser"
@@ -106,17 +137,14 @@ ROLES=(
   "roles/cloudfunctions.admin"
   "roles/cloudbuild.builds.editor"
   "roles/artifactregistry.admin"
+  "roles/artifactregistry.reader"
   "roles/owner" # need to change to role who can create service accounts
   "roles/serviceusage.serviceUsageAdmin"  # Содержит serviceusage.services.enable
   "roles/iam.serviceAccountAdmin"  # Содержит iam.serviceAccounts.create
   "roles/iam.serviceAccountKeyAdmin"
 )
 
-for role in "${ROLES[@]}"; do
-  gcloud projects add-iam-policy-binding ${DWH_PROJECT_ID} \
-    --member="serviceAccount:${SERVICE_ACCOUNT_NAME}@${DWH_PROJECT_ID}.iam.gserviceaccount.com" \
-    --role="${role}"
-done
+assign_roles_safe "$DWH_PROJECT_ID" "$SERVICE_ACCOUNT_NAME" "${ROLES[@]}"
 
 echo "Service account key saved to ${SERVICE_ACCOUNT_NAME}-key.json"
 

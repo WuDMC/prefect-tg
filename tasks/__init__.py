@@ -77,7 +77,7 @@ def parse_tg_dialogs(tg_channels_file, cloud_channels_file, force=False):
         json_helper.save_to_json(data=channels_data, path=tg_channels_file)
         prefect_logger.info(f"Dialogs metadata saved to {tg_channels_file}")
         prefect_logger.info("Updating metadata locally")
-        cloud_channels = json_helper.read_json(cloud_channels_file) or {}
+        cloud_channels = json_helper.read_json(cloud_channels_file) or channels_data
         date = tg_parser.config.get('telegram', 'start_date')
         # set start date and ids
         prefect_logger.info(f"getting target_ids for date {date}")

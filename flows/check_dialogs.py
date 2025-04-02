@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     # ✅ Load configuration from the specified file
     try:
-        config = Config(debug=True, env_file=project_env_file)
+        config = Config(debug=False, env_file=project_env_file)
 
     except Exception as e:
         print(f"❌ Error loading configuration: {e}")
@@ -71,24 +71,24 @@ if __name__ == "__main__":
 
     project = config.get("prefect", "project_name")
     work_pool = config.get("prefect", "work_pool_name")
-    # find_msg_4parsing()
-    find_msg_4parsing.deploy(
-        name=f"{project}-find_msg_4parsing",
-        work_pool_name=work_pool,
-        image=DockerImage(
-            name=f"{project}-image:latest",
-            platform="linux/amd64",
-            dockerfile="_Dockerfile",
-        ),
-        job_variables={
-            "env": {
-                "VISIONZ_HOME": docker_app_folder,
-                "GOOGLE_APPLICATION_CREDENTIALS": gcp_creds.replace(local_home_folder, docker_app_folder),
-                "PROJECT_VARS": project_env_file.replace(local_home_folder, docker_app_folder),
-                "GCP_REGION": os.getenv("GCP_REGION")
-            },
-            "keep_job": True,
-            "timeout": 3600
-        },
-        cron="0 0,6,12,18 * * *",
-    )
+    find_msg_4parsing()
+    # find_msg_4parsing.deploy(
+    #     name=f"{project}-find_msg_4parsing",
+    #     work_pool_name=work_pool,
+    #     image=DockerImage(
+    #         name=f"{project}-image:latest",
+    #         platform="linux/amd64",
+    #         dockerfile="_Dockerfile",
+    #     ),
+    #     job_variables={
+    #         "env": {
+    #             "VISIONZ_HOME": docker_app_folder,
+    #             "GOOGLE_APPLICATION_CREDENTIALS": gcp_creds.replace(local_home_folder, docker_app_folder),
+    #             "PROJECT_VARS": project_env_file.replace(local_home_folder, docker_app_folder),
+    #             "GCP_REGION": os.getenv("GCP_REGION")
+    #         },
+    #         "keep_job": True,
+    #         "timeout": 3600
+    #     },
+    #     cron="0 0,6,12,18 * * *",
+    # )

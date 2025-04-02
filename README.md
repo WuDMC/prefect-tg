@@ -114,3 +114,26 @@ Perfect for showcasing:
 - Real-world ETL/ELT scenarios
 
 ---
+
+
+сюда запишу что я делал для создания проект
+0 - инсталл террафрм
+1 - гит клоне  и make install
+2 - создаю апп в тг and get api id and api hash
+
+https://core.telegram.org/api/obtaining_api_id 
+https://my.telegram.org/apps
+
+3 - получиаю сешн стринг
+ python3 tg_login.py --api_id xxx  --api_hash yyy
+4 - с помощью бота @getidsbot получаю айдишники каналов для парсинга
+и сохраняю в виду
+WHITE_LIST='["-1001776649308", "-1001432211209", "-1001865511874", "-1001335735566"]'
+5 создал енв файл с проектом config/spain_news.env
+6 деплой алл и получаю команды для деплоя по шагам
+7 - деплой гугл проект
+/bin/bash ./deploy_gcp_dwh.sh tg-es-news europe-west1 mr.quan4i@gmail.com --create 014A87-412A23-73F5E4
+python3 terraform_deploy.py
+/bin/bash ./deploy_gcp_worker.sh tg-es-news europe-west1 mr.quan4i@gmail.com
+PYTHONPATH=$(pwd) python3 flows/check_dialogs.py
+PYTHONPATH=$(pwd) python3 flows/parse_msg.py

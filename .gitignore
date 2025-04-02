@@ -7,7 +7,8 @@ configs/secrets.json
 *.pyc
 __pycache__/
 .env
-/volume/
+/volume/*
+!/volume/.gitkeep
 /geo-roulette-480054a3a731.json
 /terraform/terraform-devenv-5718cdde5677.json
 /terraform/terraform.tfstate
@@ -26,3 +27,4 @@ iam.json**
 .idea/
 __pycache__/
 *.pyc
+/cli_session.session
