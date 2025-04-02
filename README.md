@@ -10,7 +10,7 @@ This project automates the end-to-end flow of collecting, processing, and storin
 - **⚙️ Orchestration with Prefect**  
   Prefect Cloud handles orchestration, triggering parsing jobs on schedule or on demand through registered flows and Cloud Run workers.
 
-- **💾 Lakehouse Architecture on GCP**
+- **💾 Lakehouse Architecture on GCP**  
   Raw data is stored in Google Cloud Storage as a landing zone for backups and intermediate message files. Parsed and structured data is then loaded into BigQuery, forming a lakehouse architecture that enables fast, scalable analytics on top of cloud-native storage.
 
 - **🚀 Automated Infrastructure Deployment**  
@@ -97,7 +97,6 @@ These are the typical steps for deploying this project from scratch:
    ```bash
    bash deploy_gcp_dwh.sh <project-id> europe-west1 your@email.com --create <billing-id>
    python3 terraform_deploy.py
-
    bash deploy_gcp_worker.sh <project-id> europe-west1 your@email.com
    ```
 
