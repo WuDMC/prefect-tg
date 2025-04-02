@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     # ✅ Load configuration from the specified file
     try:
-        config = Config(debug=True, env_file=env_file)
+        config = Config(debug=False, env_file=env_file)
 
     except Exception as e:
         print(f"❌ Error loading configuration: {e}")

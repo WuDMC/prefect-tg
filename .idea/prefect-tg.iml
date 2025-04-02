@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/libs/tg_jobs_parser_module" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.11 (prefect-tg)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
