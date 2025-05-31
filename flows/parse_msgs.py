@@ -70,21 +70,28 @@ if __name__ == "__main__":
 
     project = config.get("prefect", "project_name")
     work_pool = config.get("prefect", "work_pool_name")
+    region = config.get("google_cloud", "region")
+    image = DockerImage(
+        name=f"{region}-docker.pkg.dev/{project}/prefect-images/{project}-image:latest",
+        platform="linux/amd64",
+        dockerfile="_Dockerfile",
+    )
+    print("🛠️ Image name that will be built and pushed:", image.name)
+    from dotenv import dotenv_values
+
+    project_vars_dict = dotenv_values(project_env_file)
     # parse_msg_n_load2gsc()
     parse_msg_n_load2gsc.deploy(
         name=f"{project}-parse_msg_n_load2gsc",
         work_pool_name=work_pool,
-        image=DockerImage(
-            name=f"{project}-image:latest",
-            platform="linux/amd64",
-            dockerfile="_Dockerfile",
-        ),
+        image=image,
         job_variables={
             "env": {
                 "VISIONZ_HOME": docker_app_folder,
                 "GOOGLE_APPLICATION_CREDENTIALS": gcp_creds.replace(local_home_folder, docker_app_folder),
-                "PROJECT_VARS": project_env_file.replace(local_home_folder, docker_app_folder),
-                "GCP_REGION": os.getenv("GCP_REGION")
+                # "PROJECT_VARS": project_env_file.replace(local_home_folder, docker_app_folder),
+                "GCP_REGION": region,
+                **project_vars_dict,
             },
             "keep_job": True,
             "timeout": 3600
